@@ -1,0 +1,92 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: snapshot-cronjob
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          tolerations:
+          - key: node-role.kubernetes.io/master
+            operator: Exists
+            effect: NoSchedule
+          nodeSelector:
+            node-role.kubernetes.io/master: ""
+          containers:
+          - name: snapshot
+            image: busybox
+            command:
+            - /bin/sh
+            - "-c"
+            - |
+              set -ex
+              timeStamp=`date +"%Y%m%d%H%M%S"`
+
+              sourceName=$SOURCENAME
+              if [ "$SOURCENAME" = "" ]; then
+                  echo "input SOURCENAME is empty"
+                  exit 1
+              fi
+
+              sourceKind=$SOURCEKIND
+              if [ "$SNAPSHOTNAME" = "" ];then
+                  sourceKind="PersistentVolumeClaim"
+              fi
+
+              snapshotName=$SNAPSHOTNAME-$timeStamp
+              if [ "$SNAPSHOTNAME" = "" ];then
+                  snapshotName=snapshot-$sourceName-$timeStamp
+                  echo "new snapshot name: $snapshotName"
+              fi
+
+              snapshotclassName=$SNAPSHOTCLASSNAME
+              if [ "$SNAPSHOTCLASSNAME" = "" ]; then
+                  echo "input SNAPSHOTCLASSNAME is empty"
+                  exit 1
+              fi
+
+              snapshotNamespace=$SNAPSHOTNAMESPACE
+              if [ "$SNAPSHOTNAMESPACE" = "" ]; then
+                  echo "input SNAPSHOTNAMESPACE is empty"
+                  exit 1
+              fi
+
+              mkdir /root/.kube
+              cp /host/usr/bin/kubectl /bin/kubectl
+              cp /host/root/.kube/config /root/.kube/config
+              echo "apiVersion: snapshot.storage.k8s.io/v1alpha1" > /root/snapshot.yaml
+              echo "kind: VolumeSnapshot" >> /root/snapshot.yaml
+              echo "metadata:" >> /root/snapshot.yaml
+              echo "  name: "$snapshotName >> /root/snapshot.yaml
+              echo "  namespace: $snapshotNamespace" >> /root/snapshot.yaml
+              echo "spec:" >> /root/snapshot.yaml
+              echo "  snapshotClassName: $SNAPSHOTCLASSNAME" >> /root/snapshot.yaml
+              echo "  source:" >> /root/snapshot.yaml
+              echo "    name: $sourceName" >> /root/snapshot.yaml
+              echo "    kind: $sourceKind" >> /root/snapshot.yaml
+
+              kubectl apply -f /root/snapshot.yaml
+              exit 0
+
+            env:
+            - name: SOURCENAME
+              value: "pvc-disk"
+            - name: SOURCEKIND
+              value: ""
+            - name: SNAPSHOTNAME
+              value: ""
+            - name: SNAPSHOTCLASSNAME
+              value: "default-snapclass"
+            - name: SNAPSHOTNAMESPACE
+              value: "default"
+            volumeMounts:
+              - name: root
+                mountPath: /host
+                readOnly: true
+          volumes:
+            - name: root
+              hostPath:
+                path: /
+          restartPolicy: OnFailure

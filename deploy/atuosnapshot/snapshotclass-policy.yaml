@@ -1,0 +1,11 @@
+apiVersion: snapshot.storage.k8s.io/v1alpha1
+kind: AtuoVolumeSnapshot
+metadata:
+  name: default-snapclass
+  namespace: default
+parameters:
+  TimePoints: "* */1 * * *"
+  snapshotClassName: default-snapclass
+  source:
+    name: pvc-disk
+    kind: PersistentVolumeClaim

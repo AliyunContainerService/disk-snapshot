@@ -1,0 +1,70 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  namespace: kube-system
+  name: alicloud-disk-snapshot
+spec:
+  template:
+    metadata:
+      labels:
+        app: disk-snapshot
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        operator: Exists
+        key: node.cloudprovider.kubernetes.io/uninitialized
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      serviceAccount: admin
+      containers:
+        - name: external-snapshotter
+          image: registry.cn-hangzhou.aliyuncs.com/plugins/external-snapshotter:snapshot
+          imagePullPolicy: "Always"
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--connection-timeout=15s"
+          env:
+            - name: ADDRESS
+              value: /var/lib/kubelet/plugins/disk-snapshot/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/kubelet/plugins/disk-snapshot
+        - name: disk-snapshot
+          image: registry.cn-hangzhou.aliyuncs.com/plugins/disk-snapshot:snapshot
+          imagePullPolicy: "Always"
+          args :
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--v=5"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://var/lib/kubelet/plugins/disk-snapshot/csi.sock
+            - name: ACCESS_KEY_ID
+              value: ""
+            - name: ACCESS_KEY_SECRET
+              value: ""
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /var/lib/kubelet/plugins/disk-snapshot
+            - mountPath: /var/log/alicloud
+              name: host-log
+
+      volumes:
+        - name: socket-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/disk-snapshot
+            type: DirectoryOrCreate
+        - name: plugin-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/disk-snapshot
+            type: DirectoryOrCreate
+        - name: host-log
+          hostPath:
+            path: /var/log/alicloud/
