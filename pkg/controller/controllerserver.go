@@ -88,7 +88,7 @@ func (cs *controllerServer) CreateSnapshot(ctx context.Context, req *csi.CreateS
 	if err != nil {
 		return nil, fmt.Errorf("get CapacityBytes error2: %s", CapacityBytes)
 	}
-	var capacity int64 = 0
+	var capacity int64
 	if strings.HasSuffix(CapacityBytes, GB_LABEL) {
 		capacity = capacityTmp * int64(GB_BYTES)
 	} else if strings.HasSuffix(CapacityBytes, KB_LABEL) {

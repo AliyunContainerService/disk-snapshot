@@ -73,7 +73,7 @@ type DefaultOptions struct {
 
 func newEcsClient(access_key_id, access_key_secret, access_token string) *ecs.Client {
 	ecsClient := &ecs.Client{}
-	var err error = nil
+	var err error
 	if access_token == "" {
 		ecsClient, err = ecs.NewClientWithAccessKey(DEFAULT_REGION, access_key_id, access_key_secret)
 		if err != nil {
@@ -229,7 +229,7 @@ func GetRegionIdAndInstanceId(nodeName string) (string, string, error) {
 }
 
 // save json data to file
-func WriteJosnFile(obj interface{}, file string) error {
+func WriteJSONFile(obj interface{}, file string) error {
 	maps := make(map[string]interface{})
 	t := reflect.TypeOf(obj)
 	v := reflect.ValueOf(obj)
@@ -239,14 +239,13 @@ func WriteJosnFile(obj interface{}, file string) error {
 		}
 	}
 	rankingsJson, _ := json.Marshal(maps)
-	if err := ioutil.WriteFile(file, rankingsJson, 0644); err != nil {
-		return err
-	}
-	return nil
+
+	err := ioutil.WriteFile(file, rankingsJson, 0644);
+	return err
 }
 
 // parse json to struct
-func ReadJsonFile(file string) (map[string]string, error) {
+func ReadJSONFile(file string) (map[string]string, error) {
 	jsonObj := map[string]string{}
 	raw, err := ioutil.ReadFile(file)
 	if err != nil {
