@@ -50,7 +50,7 @@ func init() {
 func main() {
 	flag.Parse()
 	drivername := filepath.Base(os.Args[0])
-	log.Infof("Disk Snapshot Driver Starting: ", drivername, *nodeId, *endpoint)
+	log.Infof("Disk Snapshot Driver Starting: Driver=%s NodeId=%s Endpoint=%s", drivername, *nodeId, *endpoint)
 	if drivername == TYPE_PLUGIN_DISK {
 		driver := controller.NewDriver(*nodeId, *endpoint)
 		driver.Run()

@@ -88,7 +88,7 @@ func NewControllerServer(d *csicommon.CSIDriver) *controllerServer {
 	regionId := GetMetaData(REGIONID_TAG)
 	return &controllerServer{
 		DefaultControllerServer: csicommon.NewDefaultControllerServer(d),
-		RegionId:                  regionId,
+		RegionId:                regionId,
 	}
 }
 
