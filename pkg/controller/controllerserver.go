@@ -218,7 +218,7 @@ func (cs *controllerServer) CreateSnapshot(ctx context.Context, req *csi.CreateS
 	snapshot.ReadyToUse = false
 	diskVolumeSnapshots[snapshot.Id] = &snapshot
 
-	log.Infof("Successful Create Disk Snapshot, snapshotName: %s, VolumeId: %s, SnapShotId: %s, SizeBytes: %s, ReadyToUse: %s, CreateTime: %s", snapshot.Name, snapshot.VolumeID, snapshot.Id, snapshot.SizeBytes, snapshot.ReadyToUse, snapshot.CreationTime)
+	log.Infof("Successful Create Disk Snapshot, snapshotName: %s, VolumeId: %s, SnapShotId: %s, SizeBytes: %d, ReadyToUse: %v, CreateTime: %s", snapshot.Name, snapshot.VolumeID, snapshot.Id, snapshot.SizeBytes, snapshot.ReadyToUse, snapshot.CreationTime.String())
 	return &csi.CreateSnapshotResponse{
 		Snapshot: &csi.Snapshot{
 			SnapshotId:     snapshotID,
@@ -334,6 +334,6 @@ func (cs *controllerServer) initEcsClient() {
 	cs.EcsClient = newEcsClient(accessKeyID, accessSecret, accessToken)
 }
 
-func (cs *controllerServer) doWithAutoSnapshotPolicy(ctx context.Context, ) {
+func (cs *controllerServer) doWithAutoSnapshotPolicy(ctx context.Context) {
 
 }

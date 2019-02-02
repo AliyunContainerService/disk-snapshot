@@ -43,7 +43,7 @@ const (
 	DISK_SSD                        = "cloud_ssd"
 	MB_SIZE                         = 1024 * 1024
 	DEFAULT_REGION                  = "cn-hangzhou"
-	INSTANCEID_TAG = "instance-id"
+	INSTANCEID_TAG                  = "instance-id"
 )
 
 var (
@@ -116,7 +116,7 @@ func GetMetaData(resource string) string {
 // get STS AK
 func GetSTSAK() (string, string, string) {
 	createAssumeRoleReq := sts.CreateAssumeRoleRequest()
-	client, err:= sts.NewClient()
+	client, err := sts.NewClient()
 	if err != nil {
 		log.Infof("get sts token error with: %s", err.Error())
 		return "", "", ""
@@ -168,7 +168,6 @@ func execCommand(command string, args []string) ([]byte, error) {
 	cmd := exec.Command(command, args...)
 	return cmd.CombinedOutput()
 }
-
 
 // run shell command
 func Run(cmd string) (string, error) {
@@ -259,4 +258,3 @@ func ReadJsonFile(file string) (map[string]string, error) {
 	}
 	return jsonObj, nil
 }
-
